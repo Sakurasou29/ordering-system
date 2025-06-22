@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <title>Is-Sienja Kiosk Order</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#007bff" />
   <style>
     body {
       font-family: monospace, monospace;
@@ -741,5 +743,12 @@
   // Also update summary live if orderName, notes, orderType, or readyTime change
   document.get
   </script>
+  <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('service-worker.js')
+      .then(() => console.log('Service Worker registered'))
+      .catch(error => console.error('SW registration failed:', error));
+  }
+</script>
 </body>
 </html>
