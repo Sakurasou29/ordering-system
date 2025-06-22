@@ -1,12 +1,12 @@
 const CACHE_NAME = 'kiosk-cache-v1';
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/styles.css',   // if you have a separate CSS file
-  '/script.js',    // if you have a separate JS file
-  '/images/icon-192.png',
-  '/images/icon-512.png'
+  './',
+  './index.html',
+  './manifest.json',
+  './styles.css',   // if you have a separate CSS file
+  './script.js',    // if you have a separate JS file
+  './images/icon-192.png',
+  './images/icon-512.png'
 ];
 
 self.addEventListener('install', event => {
