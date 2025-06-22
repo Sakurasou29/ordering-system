@@ -1,6 +1,6 @@
 {
-  "name": "Is-Sienja Kiosk Order",
-  "short_name": "KioskOrder",
+  "name": "Is-Sienja Kiosk Ordering System",
+  "short_name": "Ordering System",
   "start_url": "/index.html",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -8,12 +8,12 @@
   "description": "Order system for Is-Sienja kiosk",
   "icons": [
     {
-      "src": "/icons/icon-192.png",
+      "src": "/images/icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/icons/icon-512.png",
+      "src": "/images/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
