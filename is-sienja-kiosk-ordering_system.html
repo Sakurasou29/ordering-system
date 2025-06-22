@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Is-Sienja Kiosk Order</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      font-family: monospace, monospace;
+      padding: 10px;
+      max-width: 800px;
+      margin: auto;
+      font-size: 16px;
+      line-height: 1.2;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    input.qty,
+    input.addon-qty {
+      font-size: 16px !important;
+    }
+
+    header h1 {
+      font-size: 1.5em;
+      margin: 0;
+    }
+    header button {
+      padding: 5px 12px;
+      font-size: 0.9em;
+      cursor: pointer;
+      border-radius: 4px;
+      border: 1px solid #333;
+      background: #eee;
+      white-space: nowrap;
+    }
+    h2 {
+      margin-top: 1em;
+      background: #f0f0f0;
+      padding: 6px 10px;
+      border-radius: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: bold;
+      font-size: 1em;
+    }
+    .category {
+      margin-bottom: 1em;
+      border-bottom: 1px dashed #ccc;
+      padding-bottom: 4px;
+      padding-left: 8px;
+    }
+    .item-entry {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+    }
+    .item-block {
+      margin: 6px 0 14px 10px;
+      border: 1px solid #ccc;
+      padding: 8px;
+      border-radius: 5px;
+      background: #fafafa;
+      font-size: 12.5px;
+      line-height: 1.3;
+      position: relative;
+    }
+    .modifiers {
+      margin-left: 0px;
+      margin-top: 16px;
+      font-size: 16px;
+    }
+    label {
+      display: flex;
+      align-items: center;
+      margin: 3px 0;
+      user-select: none;
+      white-space: nowrap;
+    }
+    label > input[type="checkbox"] {
+      margin-right: 6px;
+    }
+    .addon-qty {
+      width: 50px;
+      margin-left: 10px;
+      font-size: 16px;
+      padding: 3px;
+      text-align: center;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+    }
+
+    textarea,
+    input[type="text"],
+    select,
+    input[type="number"],
+    input[type="time"] {
+      width: 100%;
+      padding: 5px;
+      margin-top: 6px;
+      box-sizing: border-box;
+      font-size: 16px;
+      font-family: monospace, monospace;
+    }
+    input[type="number"].qty {
+      width: 50px;
+      margin-left: 10px;
+      font-size: 16px;
+      padding: 3px;
+    }
+    button {
+      padding: 16px 16px;
+      font-size: 0.85em;
+      cursor: pointer;
+      border-radius: 4px;
+      border: 1px solid #333;
+      background: #eee;
+      white-space: nowrap;
+    }
+    button.print-btn {
+      background: #007bff;
+      border-color: #007bff;
+      color: white;
+    }
+    .delete-btn {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background: red;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 2px 6px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 16px;
+    }
+    .total-price {
+      margin-top: 8px;
+      font-weight: bold;
+      text-align: right;
+      font-size: 16px;
+    }
+    #ticket {
+      white-space: pre-wrap;
+      font-family: monospace;
+      font-size: 16px;
+      display: none;
+      margin-top: 20px;
+      border-top: 1px solid #ccc;
+      padding-top: 10px;
+    }
+    #ticketHeader {
+      display: none;
+      margin-top: 20px;
+      font-weight: bold;
+      font-family: monospace;
+      font-size: 16px;
+      border-top: 1px solid #ccc;
+      padding-top: 10px;
+      color: #666;
+    }
+    .form-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: nowrap;
+      margin-bottom: 10px;
+      white-space: nowrap;
+    }
+    /* Order Type label and select on one line, no wrap */
+    label[for="orderType"] {
+      white-space: nowrap;
+    }
+    /* Add-ons and removals stacked, but label text no wrap */
+    .modifiers label {
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+    /* Container for buttons at bottom */
+    #buttonsContainer {
+      margin-top: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      justify-content: flex-start;
+      margin-bottom: 40px; /* extra bottom space for scroll */
+    }
+    #buttonsContainer button {
+      width: 100%;
+    }
+    .modifiers input.addon-qty {
+      width: 50px !important;
+      margin-left: 8px;
+      font-size: 16px;
+      padding: 3px;
+      text-align: left;
+    }
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #ticket,
+      #ticket * {
+        visibility: visible;
+      }
+      #ticket {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 58mm;
+        font-size: 10pt;
+        white-space: pre-wrap;
+        line-height: 1.1;
+        padding: 5px;
+        font-family: monospace;
+      }
+      @page {
+        size: 58mm auto;
+        margin: 2mm;
+      }
+    }
+    @media (max-width: 600px) {
+      h2,
+      button,
+      input,
+      label,
+      .item-block {
+        font-size: 16px;
+      }
+      button {
+        padding: 6px 10px;
+      }
+      .form-row {
+        flex-wrap: wrap;
+        white-space: normal;
+      }
+      /* Make order type and ready time stack nicely on mobile */
+      .form-row {
+        gap: 5px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Is-Sienja Kiosk Order</h1>
+    <button onclick="clearAll()">Clear All</button>
+  </header>
+
+  <div class="form-row">
+    <label for="orderType"><strong>Order Type:</strong></label>
+    <select id="orderType" name="orderType">
+      <option value="Dine In">Dine In</option>
+      <option value="Take Away">Take Away</option>
+      <option value="Pick-up">Pick-up</option>
+    </select>
+  </div>
+
+  <div class="form-row">
+  <label for="readyTime"><strong>Order Ready By (optional):</strong></label>
+  <select id="readyTime" name="readyTime">
+  </select>
+</div>
+
+<script>
+  const readyTimeSelect = document.getElementById("readyTime");
+
+  function format12Hour(hour, minute) {
+    const ampm = hour >= 12 ? "pm" : "am";
+    let h = hour % 12;
+    if (h === 0) h = 12;
+    return `${h}:${minute.toString().padStart(2, "0")} ${ampm}`;
+  }
+
+  // Add the default blank option first
+  const defaultOpt = document.createElement("option");
+  defaultOpt.value = "";
+  defaultOpt.textContent = "-- Select Time --";
+  readyTimeSelect.appendChild(defaultOpt);
+
+  // Then populate the time options
+  for (let h = 17; h <= 23; h++) {
+    for (let m = 0; m < 60; m += 15) {
+      const timeValue = `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
+      const option = document.createElement("option");
+      option.value = timeValue;
+      option.textContent = format12Hour(h, m);
+      readyTimeSelect.appendChild(option);
+    }
+  }
+</script>
+
+
+
+
+  <div id="orderArea"></div>
+
+  <textarea id="notes" rows="3" placeholder="Add any additional notes"></textarea>
+
+  <input type="text" id="orderName" placeholder="Order # / Name" style="margin-top: 10px;" />
+
+  <div id="buttonsContainer">
+    <button class="print-btn" onclick="printOrder()">Print Kitchen Ticket</button>
+    <button onclick="clearAll()">Clear All</button>
+  </div>
+
+  <div id="ticketHeader">Ticket summary:</div>
+  <div id="ticket"></div>
+
+<script>
+  const menu = [
+    {
+      name: "Steak & Egg Roll",
+      price: 5.0,
+      category: "burger",
+      addons: [
+        { name: "Add Cheese", price: 0.5 },
+        { name: "Add Bacon", price: 0.5 },
+        { name: "Add Egg", price: 0.5},
+        { name: "Add Sausage", price: 1.0}
+      ],
+      removals: ["No Salad", "No Tomatoes", "No Onions", "No Lettuce", "No Coleslaw", "No Egg"]
+    },
+    {
+      name: "Beef Burger",
+      price: 5.5,
+      category: "burger",
+      addons: [
+        { name: "Add Cheese", price: 0.5 },
+        { name: "Add Bacon", price: 0.5 },
+        { name: "Add Egg", price: 0.5},
+        { name: "Add Sausage", price: 1.0}
+      ],
+      removals: ["No Salad", "No Tomatoes", "No Onions", "No Lettuce", "No Coleslaw"]
+    },
+    {
+      name: "Chicken Fillet",
+      price: 5.5,
+      category: "burger",
+      addons: [
+        { name: "Add Cheese", price: 0.5 },
+        { name: "Add Bacon", price: 0.5 },
+        { name: "Add Egg", price: 0.5},
+        { name: "Add Sausage", price: 1.0}
+      ],
+      removals: ["No Salad", "No Tomatoes", "No Onions", "No Lettuce", "No Coleslaw"]
+    },
+    {
+      name: "Spicy Chicken Fillet",
+      price: 5.5,
+      category: "burger",
+      addons: [
+        { name: "Add Cheese", price: 0.5 },
+        { name: "Add Bacon", price: 0.5 },
+        { name: "Add Egg", price: 0.5},
+        { name: "Add Sausage", price: 1.0}
+      ],
+      removals: ["No Salad", "No Tomatoes", "No Onions", "No Lettuce", "No Coleslaw"]
+    },
+    {
+      name: "Margherita",
+      price: 7.0,
+      category: "pizza",
+      addons: [
+        { name: "Add Mozzarella", price: 1.0 },
+        { name: "Add Mushrooms", price: 1.0 },
+        { name: "Add Pepperoni", price: 1.0 }
+      ],
+      removals: ["No Tomato Sauce", "No Mozzarella"]
+    },
+    {
+      name: "Pepperoni",
+      price: 8.0,
+      category: "pizza",
+      addons: [
+        { name: "Add Olives", price: 0.8 },
+        { name: "Add Extra Pepperoni", price: 1.5 }
+      ],
+      removals: ["No Pepperoni", "No Cheese"]
+    }
+  ];
+
+  const orderArea = document.getElementById("orderArea");
+
+  ["burger", "pizza"].forEach(category => {
+    const catTitle = document.createElement("h2");
+    catTitle.textContent = category === "burger" ? "GRILLS" : "PIZZA";
+    orderArea.appendChild(catTitle);
+
+    menu.filter(m => m.category === category).forEach(item => {
+      const wrapper = document.createElement("div");
+      wrapper.className = "category";
+      wrapper.innerHTML = `
+        <div class="item-entry">
+          <span>${item.name} (€${item.price.toFixed(2)})</span>
+          <button onclick="addItem(this, '${item.name}', ${item.price}, '${category}')">+ Add</button>
+        </div>
+        <div class="item-insert"></div>
+      `;
+      orderArea.appendChild(wrapper);
+    });
+  });
+
+  function addItem(btn, name, price, category) {
+    const container = btn.closest(".category").querySelector(".item-insert");
+    const block = document.createElement("div");
+    block.className = "item-block";
+
+    const selectedItem = menu.find(m => m.name === name);
+    const addons = selectedItem.addons || [];
+    const removals = selectedItem.removals || [];
+
+    let addonsHtml = "";
+    if (addons.length) {
+      if (category === "pizza") {
+      addonsHtml = `
+        <strong>Cooking Preference:</strong><br>
+        <select class="cooking-preference" style="width: 100%; margin-bottom: 8px;">
+          <option value="Rare">Rare</option>
+          <option value="Normal" selected>Normal</option>
+          <option value="Well-Done">Well-Done</option>
+        </select>
+
+        <strong style="display: inline-block; margin-top: 12px;">Add-ons:</strong><br>
+        <select class="addon-select" style="width: 60%;">
+          <option value="">-- Select add-on --</option>
+          ${addons.map(a => `<option value="${a.name}" data-price="${a.price}">${a.name} (€${a.price.toFixed(2)})</option>`).join('')}
+        </select>
+        <div class="added-addons" style="margin-top: 8px;"></div>
+      `;
+
+      } else {
+        addonsHtml = `
+          <strong style="display: inline-block; margin-top: 12px;">Add-ons:</strong><br>
+          ${addons.map(a => `
+            <label>
+              <input type="checkbox" class="addon" data-addon="${a.name}" data-price="${a.price}">
+              ${a.name} (€${a.price.toFixed(2)})
+              <input type="number" min="1" value="1" class="addon-qty">
+            </label>
+          `).join('')}
+        `;
+      }
+    }
+
+    block.innerHTML = `
+      <button class="delete-btn" onclick="deleteItem(this)">X</button>
+      <div><strong>Item:</strong> ${name} (€${price.toFixed(2)})</div>
+      <label>Qty: <input type="number" min="1" value="1" class="qty"></label>
+      <div class="modifiers">
+        ${addonsHtml}
+        ${removals.length ? '<br><strong>Removals:</strong><br>' : ''}
+        ${removals.map(r => `<label><input type="checkbox" data-removal="${r}" class="removal"> ${r}</label>`).join('')}
+      </div>
+      <input type="hidden" class="item-name" value="${name}">
+      <input type="hidden" class="item-base-price" value="${price}">
+      <div class="total-price">Total: €${price.toFixed(2)}</div>
+    `;
+
+    container.appendChild(block);
+
+    const qtyInput = block.querySelector(".qty");
+    const totalPriceDiv = block.querySelector(".total-price");
+
+    if (category === "pizza") {
+      const addonSelect = block.querySelector(".addon-select");
+      const addAddonBtn = block.querySelector(".add-addon-btn");
+      const addedAddonsContainer = block.querySelector(".added-addons");
+      const cookingPreference = block.querySelector(".cooking-preference");
+
+      function updateTotal() {
+        const qty = Math.max(1, parseInt(qtyInput.value) || 1);
+        let addonsTotal = 0;
+
+        addedAddonsContainer.querySelectorAll(".added-addon").forEach(addonDiv => {
+          const price = parseFloat(addonDiv.dataset.price);
+          const addonQty = Math.max(1, parseInt(addonDiv.querySelector(".addon-qty").value) || 1);
+          addonsTotal += price * addonQty;
+        });
+
+        const total = (price + addonsTotal) * qty;
+        totalPriceDiv.textContent = `Total: €${total.toFixed(2)}`;
+      }
+
+      addonSelect.addEventListener("change", () => {
+  const selectedOption = addonSelect.options[addonSelect.selectedIndex];
+  if (selectedOption && selectedOption.value) {
+    const addonName = selectedOption.value;
+    const addonPrice = selectedOption.dataset.price;
+
+    // Remove from dropdown
+    addonSelect.removeChild(selectedOption);
+
+    // Reset select back to default option
+    addonSelect.value = "";
+
+    // Create addon div
+    const addonDiv = document.createElement("div");
+    addonDiv.className = "added-addon";
+    addonDiv.dataset.price = addonPrice;
+    addonDiv.style = "margin-top: 4px; display: flex; align-items: center; gap: 8px;";
+
+    addonDiv.innerHTML = `
+      <span>${addonName} (€${parseFloat(addonPrice).toFixed(2)})</span>
+      Qty: <input type="number" min="1" value="1" class="addon-qty" style="width: 50px; padding: 2px; font-size: 13px;">
+      <button type="button" class="remove-addon-btn" style="color: red; font-size: 14px; background: none; border: none; cursor: pointer;">×</button>
+    `;
+
+    const addedAddonsContainer = block.querySelector(".added-addons");
+    addedAddonsContainer.appendChild(addonDiv);
+
+    addonDiv.querySelector(".remove-addon-btn").addEventListener("click", () => {
+      // Restore option to dropdown
+      const restoredOption = document.createElement("option");
+      restoredOption.value = addonName;
+      restoredOption.dataset.price = addonPrice;
+      restoredOption.textContent = `${addonName} (€${parseFloat(addonPrice).toFixed(2)})`;
+      addonSelect.appendChild(restoredOption);
+
+      addonDiv.remove();
+      updateTotal();
+      updateSummary();
+    });
+
+    addonDiv.querySelector(".addon-qty").addEventListener("input", () => {
+      updateTotal();
+      updateSummary();
+    });
+
+    updateTotal();
+    updateSummary();
+  }
+});
+
+
+      qtyInput.addEventListener("input", () => {
+        updateTotal();
+        updateSummary();
+      });
+
+      cookingPreference.addEventListener("change", updateSummary);
+
+    } else {
+      // For burgers: update summary when qty, addon checkbox, or removals change
+      qtyInput.addEventListener("input", updateSummary);
+
+      block.querySelectorAll(".addon").forEach(cb => {
+        cb.addEventListener("change", updateSummary);
+      });
+    }
+
+    block.querySelectorAll(".removal").forEach(cb => {
+      cb.addEventListener("change", updateSummary);
+    });
+
+    updateSummary();
+  }
+
+  function deleteItem(btn) {
+    btn.parentElement.remove();
+    updateSummary();
+  }
+
+  function updateSummary() {
+    const orderName = document.getElementById("orderName").value || "---";
+    const notes = document.getElementById("notes").value.trim();
+    const orderType = document.getElementById("orderType").value;
+    const readyTime = document.getElementById("readyTime").value;
+
+    const blocks = [...document.querySelectorAll(".item-block")];
+    const grouped = { burger: [], pizza: [] };
+    blocks.forEach(b => {
+      const item = b.querySelector(".item-name").value;
+      const cat = menu.find(m => m.name === item)?.category || "burger";
+      grouped[cat].push(b);
+    });
+
+    let ticket = `ORDER: ${orderName}\nTYPE: ${orderType}\n`;
+    if (readyTime) ticket += `READY BY: ${readyTime}\n`;
+    ticket += "\n";
+
+    if (grouped.burger.length) {
+      ticket += "GRILLS\n";
+      grouped.burger.forEach(b => {
+        const name = b.querySelector(".item-name").value;
+        const qty = b.querySelector(".qty").value;
+        ticket += `${qty} X ${name}\n`;
+
+        b.querySelectorAll(".addon:checked").forEach((cb, i) => {
+          const addonName = cb.dataset.addon;
+          const addonQty = b.querySelectorAll(".addon-qty")[i].value;
+          ticket += `   + ${addonName} x${addonQty}\n`;
+        });
+
+        b.querySelectorAll(".removal:checked").forEach(r => {
+          ticket += `   - ${r.dataset.removal}\n`;
+        });
+        ticket += "\n";
+      });
+    }
+
+    if (grouped.pizza.length) {
+      ticket += "PIZZA\n";
+      grouped.pizza.forEach(b => {
+        const name = b.querySelector(".item-name").value;
+        const qty = b.querySelector(".qty").value;
+        ticket += `${qty} X ${name}\n`;
+
+        const addedAddonsContainer = b.querySelector(".added-addons");
+        if (addedAddonsContainer) {
+          addedAddonsContainer.querySelectorAll(".added-addon").forEach(addonDiv => {
+            const addonName = addonDiv.querySelector("span").textContent.split(" (€")[0];
+            const addonQty = addonDiv.querySelector(".addon-qty").value;
+            ticket += `   + ${addonName} x${addonQty}\n`;
+          });
+        }
+
+        const cookingPrefSelect = b.querySelector(".cooking-preference");
+        if (cookingPrefSelect) {
+          ticket += `   Cooking Preference: ${cookingPrefSelect.value}\n`;
+        }
+
+        b.querySelectorAll(".removal:checked").forEach(r => {
+          ticket += `   - ${r.dataset.removal}\n`;
+        });
+        ticket += "\n";
+      });
+    }
+
+    if (notes) ticket += `Notes:\n${notes}\n`;
+
+    const ticketDiv = document.getElementById("ticket");
+    ticketDiv.textContent = ticket;
+    ticketDiv.style.display = blocks.length ? "block" : "none";
+
+    document.getElementById("ticketHeader").style.display = blocks.length ? "block" : "none";
+  }
+
+  function printOrder() {
+    const now = new Date();
+    let hours = now.getHours(),
+      mins = now.getMinutes();
+    const ampm = hours >= 12 ? "pm" : "am";
+    hours = hours % 12 || 12;
+    const timeStr = `${hours}:${mins.toString().padStart(2, "0")} ${ampm}`;
+
+    const orderName = document.getElementById("orderName").value || "---";
+    const notes = document.getElementById("notes").value.trim();
+    const orderType = document.getElementById("orderType").value;
+    const readyTime = document.getElementById("readyTime").value;
+
+    const blocks = [...document.querySelectorAll(".item-block")];
+    const grouped = { burger: [], pizza: [] };
+    blocks.forEach(b => {
+      const item = b.querySelector(".item-name").value;
+      const cat = menu.find(m => m.name === item)?.category || "burger";
+      grouped[cat].push(b);
+    });
+
+    let ticket = `ORDER: ${orderName}\nTYPE: ${orderType}\n`;
+    if (readyTime) ticket += `READY BY: ${readyTime}\n`;
+    ticket += `TIME: ${timeStr}\n\n`;
+
+    if (grouped.burger.length) {
+      ticket += "GRILLS\n";
+      grouped.burger.forEach(b => {
+        const name = b.querySelector(".item-name").value;
+        const qty = b.querySelector(".qty").value;
+        ticket += `${qty} X ${name}\n`;
+
+        b.querySelectorAll(".addon:checked").forEach((cb, i) => {
+          const addonName = cb.dataset.addon;
+          const addonQty = b.querySelectorAll(".addon-qty")[i].value;
+          ticket += `   + ${addonName} x${addonQty}\n`;
+        });
+
+        b.querySelectorAll(".removal:checked").forEach(r => {
+          ticket += `   - ${r.dataset.removal}\n`;
+        });
+        ticket += "\n";
+      });
+    }
+
+    if (grouped.pizza.length) {
+      ticket += "PIZZA\n";
+      grouped.pizza.forEach(b => {
+        const name = b.querySelector(".item-name").value;
+        const qty = b.querySelector(".qty").value;
+        ticket += `${qty} X ${name}\n`;
+
+        const addedAddonsContainer = b.querySelector(".added-addons");
+        if (addedAddonsContainer) {
+          addedAddonsContainer.querySelectorAll(".added-addon").forEach(addonDiv => {
+            const addonName = addonDiv.querySelector("span").textContent.split(" (€")[0];
+            const addonQty = addonDiv.querySelector(".addon-qty").value;
+            ticket += `   + ${addonName} x${addonQty}\n`;
+          });
+        }
+
+        const cookingPrefSelect = b.querySelector(".cooking-preference");
+        if (cookingPrefSelect) {
+          ticket += `   Cooking Preference: ${cookingPrefSelect.value}\n`;
+        }
+
+        b.querySelectorAll(".removal:checked").forEach(r => {
+          ticket += `   - ${r.dataset.removal}\n`;
+        });
+        ticket += "\n";
+      });
+    }
+
+    if (notes) ticket += `Notes:\n${notes}\n`;
+
+    const ticketDiv = document.getElementById("ticket");
+    ticketDiv.textContent = ticket;
+    ticketDiv.style.display = "block";
+
+    document.getElementById("ticketHeader").style.display = "block";
+
+    setTimeout(() => window.print(), 100);
+  }
+
+  function clearAll() {
+    document.getElementById("orderName").value = "";
+    document.getElementById("notes").value = "";
+    document.getElementById("readyTime").value = "";
+    document.getElementById("orderType").value = "Dine In";
+    document.querySelectorAll(".item-insert").forEach(div => (div.innerHTML = ""));
+    document.getElementById("ticket").style.display = "none";
+    document.getElementById("ticketHeader").style.display = "none";
+  }
+
+  // Also update summary live if orderName, notes, orderType, or readyTime change
+  document.get
+  </script>
+</body>
+</html>
